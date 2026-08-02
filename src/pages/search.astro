@@ -1,0 +1,213 @@
+---
+import { getCollection } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
+import Footer from '../components/Footer.astro';
+import FormattedDate from '../components/FormattedDate.astro';
+import Header from '../components/Header.astro';
+import { SITE_TITLE } from '../consts';
+
+function stripMarkdown(md: string) {
+	return md
+		.replace(/```[\s\S]*?```/g, ' ')
+		.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+		.replace(/[#*_`>]/g, '')
+		.replace(/\s+/g, ' ')
+		.trim();
+}
+
+function escapeRegExp(str: string) {
+	return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function escapeHtml(str: string) {
+	return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function countOccurrences(haystack: string, needle: string) {
+	if (!needle) return 0;
+	let count = 0;
+	let pos = 0;
+	while ((pos = haystack.indexOf(needle, pos)) !== -1) {
+		count++;
+		pos += needle.length;
+	}
+	return count;
+}
+
+function buildSnippet(body: string, terms: string[], radius = 100) {
+	const lower = body.toLowerCase();
+	let idx = -1;
+	for (const term of terms) {
+		const i = lower.indexOf(term);
+		if (i !== -1 && (idx === -1 || i < idx)) idx = i;
+	}
+	if (idx === -1) idx = 0;
+	const start = Math.max(0, idx - radius);
+	const end = Math.min(body.length, idx + radius);
+	let snippet = body.slice(start, end).trim();
+	if (start > 0) snippet = '…' + snippet;
+	if (end < body.length) snippet = snippet + '…';
+	return snippet;
+}
+
+function highlight(snippet: string, terms: string[]) {
+	const escaped = escapeHtml(snippet);
+	if (terms.length === 0) return escaped;
+	const pattern = new RegExp(`(${terms.map(escapeRegExp).join('|')})`, 'gi');
+	return escaped.replace(pattern, '<mark>$1</mark>');
+}
+
+const query = Astro.url.searchParams.get('q')?.trim() ?? '';
+const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+
+const allPosts = await getCollection('blog');
+
+const results =
+	terms.length === 0
+		? []
+		: allPosts
+				.map((post) => {
+					const title = post.data.title.toLowerCase();
+					const description = post.data.description.toLowerCase();
+					const strippedBody = stripMarkdown(post.body ?? '');
+					const body = strippedBody.toLowerCase();
+
+					let score = 0;
+					let matchedAll = true;
+					for (const term of terms) {
+						const occurrences =
+							countOccurrences(title, term) * 5 +
+							countOccurrences(description, term) * 3 +
+							countOccurrences(body, term);
+						if (occurrences === 0) {
+							matchedAll = false;
+							break;
+						}
+						score += occurrences;
+					}
+
+					return { post, score, matchedAll, snippet: buildSnippet(strippedBody, terms) };
+				})
+				.filter((r) => r.matchedAll)
+				.sort((a, b) => b.score - a.score || b.post.data.pubDate.valueOf() - a.post.data.pubDate.valueOf());
+---
+
+<!doctype html>
+<html lang="ru">
+	<head>
+		<BaseHead title={`Поиск — ${SITE_TITLE}`} description="Поиск по статьям дайджеста." />
+		<style>
+			main {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: 0 auto;
+			}
+			form {
+				display: flex;
+				gap: 0.5em;
+				margin: 2em 0;
+			}
+			input[type='search'] {
+				flex: 1;
+				padding: 0.6em 0.8em;
+				border: 1px solid rgb(var(--gray));
+				border-radius: 6px;
+				font-size: 1em;
+				font-family: inherit;
+			}
+			button {
+				padding: 0.6em 1.2em;
+				border: none;
+				border-radius: 6px;
+				background: rgb(var(--accent));
+				color: white;
+				font-size: 1em;
+				cursor: pointer;
+			}
+			.status {
+				color: rgb(var(--gray));
+				margin-bottom: 1em;
+			}
+			ul {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			li {
+				margin-bottom: 2em;
+				padding-bottom: 2em;
+				border-bottom: 1px solid rgb(var(--gray-light));
+			}
+			li:last-child {
+				border-bottom: none;
+			}
+			.title {
+				margin: 0 0 0.2em 0;
+				color: rgb(var(--black));
+			}
+			.date {
+				margin: 0 0 0.5em 0;
+				color: rgb(var(--gray));
+				font-size: 0.9em;
+			}
+			.snippet {
+				margin: 0;
+				color: rgb(var(--gray-dark));
+			}
+			.snippet :global(mark) {
+				background: rgb(var(--gray-light));
+				color: rgb(var(--black));
+				padding: 0 0.1em;
+			}
+			a {
+				text-decoration: none;
+			}
+			a:hover .title {
+				color: rgb(var(--accent));
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<form method="get" action="/search">
+				<input
+					type="search"
+					name="q"
+					value={query}
+					placeholder="Поиск по статьям…"
+					aria-label="Поиск по статьям"
+					autofocus
+				/>
+				<button type="submit">Найти</button>
+			</form>
+
+			{
+				terms.length === 0 ? (
+					<p class="status">Введите запрос, чтобы найти статьи.</p>
+				) : (
+					<>
+						<p class="status">
+							По запросу «{query}» {results.length === 0 ? 'ничего не найдено' : `найдено: ${results.length}`}
+						</p>
+						<ul>
+							{results.map(({ post, snippet }) => (
+								<li>
+									<a href={`/blog/${post.id}/`}>
+										<h3 class="title">{post.data.title}</h3>
+										<p class="date">
+											<FormattedDate date={post.data.pubDate} />
+										</p>
+										<p class="snippet" set:html={highlight(snippet, terms)} />
+									</a>
+								</li>
+							))}
+						</ul>
+					</>
+				)
+			}
+		</main>
+		<Footer />
+	</body>
+</html>
