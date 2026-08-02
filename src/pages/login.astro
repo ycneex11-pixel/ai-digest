@@ -1,0 +1,69 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import { SITE_TITLE } from '../consts';
+
+const error = Astro.url.searchParams.get('error');
+const callbackUrl = Astro.url.searchParams.get('callbackUrl') || '/';
+---
+
+<html lang="ru">
+	<head>
+		<BaseHead title={`Вход — ${SITE_TITLE}`} description="Вход в закрытый раздел сайта." />
+	</head>
+	<body>
+		<main class="login">
+			<h1>Вход</h1>
+			<form id="login-form">
+				<label>
+					Email
+					<input type="email" name="email" required autocomplete="username" />
+				</label>
+				<label>
+					Пароль
+					<input type="password" name="password" required autocomplete="current-password" />
+				</label>
+				<input type="hidden" name="callbackUrl" value={callbackUrl} />
+				<button type="submit">Войти</button>
+			</form>
+			{error && <p class="error">Неверный email или пароль.</p>}
+		</main>
+		<style>
+			.login {
+				max-width: 320px;
+				margin: 4em auto;
+				padding: 0 1em;
+			}
+			h1 {
+				text-align: center;
+			}
+			form {
+				display: flex;
+				flex-direction: column;
+				gap: 1em;
+			}
+			label {
+				display: flex;
+				flex-direction: column;
+				gap: 0.25em;
+			}
+			.error {
+				color: #c00;
+				text-align: center;
+			}
+		</style>
+		<script>
+			const { signIn } = await import('auth-astro/client');
+			const form = document.getElementById('login-form') as HTMLFormElement;
+
+			form.addEventListener('submit', (event) => {
+				event.preventDefault();
+				const data = new FormData(form);
+				signIn('credentials', {
+					email: data.get('email'),
+					password: data.get('password'),
+					callbackUrl: String(data.get('callbackUrl') || '/'),
+				});
+			});
+		</script>
+	</body>
+</html>
