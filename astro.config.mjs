@@ -13,6 +13,12 @@ export default defineConfig({
 	// Render пробрасывает порт через PORT и проверяет его снаружи —
 	// сервер должен слушать 0.0.0.0, а не localhost.
 	server: { host: true },
+	// Render терминирует TLS и проксирует до приложения по http. Без этого списка
+	// Astro игнорирует x-forwarded-proto, считает соединение незашифрованным,
+	// и Auth.js выдаёт куки без Secure и callback-адреса на http://.
+	security: {
+		allowedDomains: [{ hostname: 'ai-digest-qedk.onrender.com', protocol: 'https' }],
+	},
 	integrations: [mdx(), auth()],
 	markdown: {
 		shikiConfig: {
