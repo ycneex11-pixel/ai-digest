@@ -8,7 +8,7 @@ import { defineConfig } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://example.com',
+	site: 'https://ai-digest-qedk.onrender.com',
 	output: 'server',
 	adapter: node({ mode: 'standalone' }),
 	// Render пробрасывает порт через PORT и проверяет его снаружи —
