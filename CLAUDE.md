@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `npm install`
 - `npm run dev` — dev-сервер на `:4321`.
-- `npm run build` — production-сборка. Генерирует `sitemap-index.xml` через `@astrojs/sitemap`; для корректных абсолютных ссылок (sitemap, RSS) нужен реальный `site` в `astro.config.mjs` — сейчас там заглушка `https://example.com`.
+- `npm run build` — production-сборка. Абсолютные ссылки в RSS берутся из `site` в `astro.config.mjs` — сейчас это домен деплоя `https://ai-digest-qedk.onrender.com`.
 - `npm run preview` — просмотр собранного сайта.
 
 Линтера и тестов в проекте нет — `package.json` их не определяет.
@@ -37,7 +37,7 @@ Node `>=22.12.0` (см. `engines` в `package.json`).
 
 Скилл `/cover` (`.claude/skills/cover.md`) — то же генерирование обложки, но как самостоятельная команда вне пайплайна.
 
-**Для шага `page-builder` нужен git-репозиторий с настроенным `origin`.** Сейчас в проекте нет `.git` (папка получена распаковкой архива) — push упадёт, пока репозиторий не инициализирован и не подключён к удалённому.
+**Для шага `page-builder` нужен git-репозиторий с настроенным `origin`.** Репозиторий подключён к `https://github.com/ycneex11-pixel/ai-digest`, ветка по умолчанию — `main`.
 
 ### Хуки (`.claude/settings.json`)
 
