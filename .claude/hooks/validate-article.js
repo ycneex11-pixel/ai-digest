@@ -20,7 +20,7 @@ const recent = fs.readdirSync(blogDir)
 
 if (recent.length === 0) process.exit(0);
 
-const required = ['title', 'description', 'pubDate', 'cover', 'source'];
+const required = ['title', 'description', 'pubDate', 'heroImage', 'source'];
 const errors = [];
 
 for (const { full, f } of recent) {

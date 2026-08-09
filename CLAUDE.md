@@ -25,14 +25,16 @@ Node `>=22.12.0` (см. `engines` в `package.json`).
 
 Статьи — коллекция `blog`, читается из `src/content/blog/*.{md,mdx}` (схема в `src/content.config.ts`, Zod). Поля: `title`, `description`, `pubDate`, `updatedDate?`, `heroImage?` (локальное изображение через `astro:assets`), `source?` (URL), `tags[]`.
 
-**Известное рассогласование в пайплайне:** агенты `writer`/`cover-artist` и Stop-хук `validate-article.js` пишут и требуют поле `cover` (URL обложки с Replicate), но `cover` не объявлен в Zod-схеме `content.config.ts` и не используется в вёрстке — `BlogPost.astro` и `blog/index.astro` рендерят только `heroImage` (ожидает локально импортированный файл, не произвольный URL). Zod молча отбрасывает незаявленное поле при парсинге, поэтому сгенерированные обложки сейчас нигде на сайте не отображаются. Это стоит иметь в виду при следующей правке схемы или вёрстки.
+**Обложки — локальные файлы, не URL.** `cover-artist` скачивает картинку с Replicate в `src/assets/covers/<slug>.webp` и пишет во frontmatter `heroImage` с путём относительно статьи. Ссылки `replicate.delivery` временные (протухают в 404), поэтому хранить их в контенте нельзя. Поля `cover` в схеме нет — только `heroImage` через `image()`.
+
+**У трёх старых статей (`2026-04-23-*`) в frontmatter остался мёртвый `cover:` с недоступным URL.** Zod его игнорирует, на сайте эти статьи просто без картинки. Обложки для них надо перегенерировать через `/cover` или удалить поле.
 
 ### Пайплайн публикации — субагенты, не скрипт
 
 Дайджест собирается цепочкой Claude Code субагентов через скилл `/digest` (`.claude/skills/digest.md`):
 
 1. **news-scout** (`.claude/agents/news-scout.md`) — ищет 3 темы через MCP Tavily, отбирает по разделу «Редполитика» ниже в этом файле.
-2. Для каждой темы параллельно: **writer** (`.claude/agents/writer.md`) пишет статью и сохраняет в `src/content/blog/`, затем **cover-artist** (`.claude/agents/cover-artist.md`) генерирует обложку через MCP Replicate (модель `flux-schnell`, 16:9) и дописывает `cover:` во frontmatter.
+2. Для каждой темы параллельно: **writer** (`.claude/agents/writer.md`) пишет статью и сохраняет в `src/content/blog/`, затем **cover-artist** (`.claude/agents/cover-artist.md`) генерирует обложку через MCP Replicate (модель `flux-schnell`, 16:9), скачивает её в `src/assets/covers/` и дописывает `heroImage:` во frontmatter.
 3. **page-builder** (`.claude/agents/page-builder.md`) — финальная проверка frontmatter всех статей выпуска, коммит в ветку `digest/auto`, `git push origin digest/auto`.
 
 Скилл `/cover` (`.claude/skills/cover.md`) — то же генерирование обложки, но как самостоятельная команда вне пайплайна.
@@ -43,7 +45,7 @@ Node `>=22.12.0` (см. `engines` в `package.json`).
 
 - **PreToolUse / Bash** → `.claude/hooks/block-main-push.sh`: блокирует `git push` в `main`/`master`, если не выставлена переменная `CAPSTONE_ALLOW_MAIN_PUSH=1`. Автоматика коммитит в `digest/auto`, слияние в `main` — вручную.
 - **PostToolUse** → `.claude/hooks/pipeline-log.sh`: логирует каждый вызов инструмента в `logs/pipeline.log` (в `.gitignore`).
-- **Stop** → `.claude/hooks/validate-article.js`: проверяет статьи, изменённые за последние 10 минут, — обязательные поля frontmatter (`title`, `description`, `pubDate`, `cover`, `source`), длину `title` (≤60 символов) и `description` (≤160). При нарушении блокирует завершение хода.
+- **Stop** → `.claude/hooks/validate-article.js`: проверяет статьи, изменённые за последние 10 минут, — обязательные поля frontmatter (`title`, `description`, `pubDate`, `heroImage`, `source`), длину `title` (≤60 символов) и `description` (≤160). При нарушении блокирует завершение хода.
 
 ## Редполитика
 
@@ -75,9 +77,9 @@ Node `>=22.12.0` (см. `engines` в `package.json`).
 - Описание: одно предложение до 160 символов.
 - Тело: 300–500 слов, 2–4 абзаца.
 - Источник: обязательная ссылка на первоисточник.
-- Обложка: URL от Replicate, соотношение 16:9.
+- Обложка: локальный файл в `src/assets/covers/`, соотношение 16:9. В frontmatter — `heroImage` с путём относительно статьи.
 
-Обязательные поля frontmatter: `title`, `description`, `pubDate`, `cover`, `source` — все заполнены (проверяется Stop-хуком).
+Обязательные поля frontmatter: `title`, `description`, `pubDate`, `heroImage`, `source` — все заполнены (проверяется Stop-хуком).
 
 ## Git
 

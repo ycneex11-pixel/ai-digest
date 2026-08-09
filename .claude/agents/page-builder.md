@@ -14,7 +14,7 @@ tools: Read, Bash
 
 ## Действия
 
-1. Для каждой статьи проверь frontmatter: `title`, `description`, `pubDate`, `cover`, `source` заполнены, title ≤ 60 символов, description ≤ 160.
+1. Для каждой статьи проверь frontmatter: `title`, `description`, `pubDate`, `heroImage`, `source` заполнены, title ≤ 60 символов, description ≤ 160. Убедись, что файл, на который указывает `heroImage`, существует в `src/assets/covers/`.
 2. Если чего-то нет — верни ошибку с указанием файла и поля. Не коммить.
 3. Если всё в порядке:
    - `git checkout -B digest/auto` (создать ветку, если нет).
