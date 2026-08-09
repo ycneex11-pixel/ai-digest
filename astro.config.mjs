@@ -2,7 +2,6 @@
 
 import node from '@astrojs/node';
 import mdx from '@astrojs/mdx';
-import sitemap from '@astrojs/sitemap';
 import auth from 'auth-astro';
 import { defineConfig } from 'astro/config';
 
@@ -14,7 +13,7 @@ export default defineConfig({
 	// Render пробрасывает порт через PORT и проверяет его снаружи —
 	// сервер должен слушать 0.0.0.0, а не localhost.
 	server: { host: true },
-	integrations: [mdx(), sitemap(), auth()],
+	integrations: [mdx(), auth()],
 	markdown: {
 		shikiConfig: {
 			themes: { light: 'github-light', dark: 'github-dark' },

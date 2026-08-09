@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - `npm install`
 - `npm run dev` — dev-сервер на `:4321`.
-- `npm run build` — production-сборка. Генерирует `sitemap-index.xml` через `@astrojs/sitemap`; абсолютные ссылки (sitemap, RSS) берутся из `site` в `astro.config.mjs` — сейчас это домен деплоя `https://ai-digest-qedk.onrender.com`.
+- `npm run build` — production-сборка. Абсолютные ссылки в RSS берутся из `site` в `astro.config.mjs` — сейчас это домен деплоя `https://ai-digest-qedk.onrender.com`.
 - `npm run preview` — просмотр собранного сайта.
 
 Линтера и тестов в проекте нет — `package.json` их не определяет.
