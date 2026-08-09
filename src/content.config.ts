@@ -13,6 +13,9 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: z.optional(image()),
+			// Обложка, сгенерированная cover-artist: удалённый URL с Replicate.
+			// В отличие от heroImage это не локальный файл, поэтому не image().
+			cover: z.string().url().optional(),
 			source: z.string().url().optional(),
 			tags: z.array(z.string()).default([]),
 		}),
