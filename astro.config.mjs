@@ -10,7 +10,7 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
 	site: 'https://example.com',
 	output: 'server',
-	adapter: node({ mode: 'standalone' }),
+	adapter: node({ mode: 'standalone', host: true }),
 	integrations: [mdx(), sitemap(), auth()],
 	markdown: {
 		shikiConfig: {
