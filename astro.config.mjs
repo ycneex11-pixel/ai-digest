@@ -10,7 +10,10 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
 	site: 'https://example.com',
 	output: 'server',
-	adapter: node({ mode: 'standalone', host: true }),
+	adapter: node({ mode: 'standalone' }),
+	// Render пробрасывает порт через PORT и проверяет его снаружи —
+	// сервер должен слушать 0.0.0.0, а не localhost.
+	server: { host: true },
 	integrations: [mdx(), sitemap(), auth()],
 	markdown: {
 		shikiConfig: {
