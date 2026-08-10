@@ -24,7 +24,26 @@ try {
 if (data.tool_name !== 'Bash' && data.tool_name !== 'PowerShell') process.exit(0);
 
 const command = data.tool_input?.command ?? '';
-const pushesToMain = /git\s+push\b[\s\S]*\b(main|master)\b/.test(command);
+
+// Сегмент — кусок между шелл-разделителями. Иначе «git push origin fix/x && git checkout main»
+// блокируется ложно: push и main из разных команд.
+function pushTargetsMain(segment) {
+	const afterPush = segment.match(/\bgit\b[^|]*?\bpush\b(.*)$/);
+	if (!afterPush) return false;
+	return afterPush[1]
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean)
+		.map((t) => t.replace(/^["']|["']$/g, ''))
+		.filter((t) => !t.startsWith('-'))
+		.some(
+			(t) =>
+				/^\+?(refs\/heads\/)?(main|master)$/.test(t) || // git push origin main
+				/^\+?[^:]*:(refs\/heads\/)?(main|master)$/.test(t) // git push origin HEAD:main, :main
+		);
+}
+
+const pushesToMain = command.split(/&&|\|\||;|\||\r?\n/).some(pushTargetsMain);
 
 if (pushesToMain && process.env.CAPSTONE_ALLOW_MAIN_PUSH !== '1') {
 	console.error('BLOCK: прямой push в main запрещён. Коммитим в digest/auto, merge — ручной шаг.');
