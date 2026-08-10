@@ -17,7 +17,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Node `>=22.12.0` (см. `engines` в `package.json`).
 
-MCP-серверы (Tavily, Replicate) объявлены в `.mcp.json` в корне — Claude Code читает проектные серверы только оттуда, ключ `mcpServers` в `settings.json` игнорируется. Ключи подставляются из окружения через `${TAVILY_API_KEY}` и `${REPLICATE_API_TOKEN}`, поэтому запускайте Claude Code через `./run-claude.sh`, а не голым `claude` — скрипт подгружает `.env` (не в репозитории, см. `.gitignore`) перед стартом.
+MCP-сервер Tavily объявлен в `.mcp.json` в корне — Claude Code читает проектные серверы только оттуда, ключ `mcpServers` в `settings.json` игнорируется. Ключ подставляется из окружения через `${TAVILY_API_KEY}`, поэтому запускайте Claude Code через `./run-claude.sh`, а не голым `claude` — скрипт подгружает `.env` (не в репозитории, см. `.gitignore`) перед стартом. Строка `TAVILY_API_KEY=...` в `.env` обязательна, иначе поиск отвечает `Unauthorized`.
+
+Обложки MCP не требуют: `cover-artist` берёт их с `image.pollinations.ai` обычным `curl`, без ключа и без оплаты. Replicate из проекта убран — он требовал привязки карты.
 
 ## Архитектура
 
@@ -25,7 +27,7 @@ MCP-серверы (Tavily, Replicate) объявлены в `.mcp.json` в ко
 
 Статьи — коллекция `blog`, читается из `src/content/blog/*.{md,mdx}` (схема в `src/content.config.ts`, Zod). Поля: `title`, `description`, `pubDate`, `updatedDate?`, `heroImage?` (локальное изображение через `astro:assets`), `source?` (URL), `tags[]`.
 
-**Обложки — локальные файлы, не URL.** `cover-artist` скачивает картинку с Replicate в `src/assets/covers/<slug>.webp` и пишет во frontmatter `heroImage` с путём относительно статьи. Ссылки `replicate.delivery` временные (протухают в 404), поэтому хранить их в контенте нельзя. Поля `cover` в схеме нет — только `heroImage` через `image()`.
+**Обложки — локальные файлы, не URL.** `cover-artist` скачивает картинку в `src/assets/covers/<slug>.jpg` и пишет во frontmatter `heroImage` с путём относительно статьи. Ссылки на генераторы нестабильны, а `image()` в схеме принимает только локальный файл, поэтому хранить URL в контенте нельзя. Поля `cover` в схеме нет — только `heroImage`.
 
 **У трёх старых статей (`2026-04-23-*`) в frontmatter остался мёртвый `cover:` с недоступным URL.** Zod его игнорирует, на сайте эти статьи просто без картинки. Обложки для них надо перегенерировать через `/cover` или удалить поле.
 
@@ -34,7 +36,7 @@ MCP-серверы (Tavily, Replicate) объявлены в `.mcp.json` в ко
 Дайджест собирается цепочкой Claude Code субагентов через скилл `/digest` (`.claude/skills/digest.md`):
 
 1. **news-scout** (`.claude/agents/news-scout.md`) — ищет 3 темы через MCP Tavily, отбирает по разделу «Редполитика» ниже в этом файле.
-2. Для каждой темы параллельно: **writer** (`.claude/agents/writer.md`) пишет статью и сохраняет в `src/content/blog/`, затем **cover-artist** (`.claude/agents/cover-artist.md`) генерирует обложку через MCP Replicate (модель `flux-schnell`, 16:9), скачивает её в `src/assets/covers/` и дописывает `heroImage:` во frontmatter.
+2. Для каждой темы параллельно: **writer** (`.claude/agents/writer.md`) пишет статью и сохраняет в `src/content/blog/`, затем **cover-artist** (`.claude/agents/cover-artist.md`) генерирует обложку 16:9 через `image.pollinations.ai`, скачивает её в `src/assets/covers/` и дописывает `heroImage:` во frontmatter.
 3. **page-builder** (`.claude/agents/page-builder.md`) — финальная проверка frontmatter всех статей выпуска, коммит в ветку `digest/auto`, `git push origin digest/auto`.
 
 Скилл `/cover` (`.claude/skills/cover.md`) — то же генерирование обложки, но как самостоятельная команда вне пайплайна.
@@ -43,8 +45,10 @@ MCP-серверы (Tavily, Replicate) объявлены в `.mcp.json` в ко
 
 ### Хуки (`.claude/settings.json`)
 
-- **PreToolUse / Bash** → `.claude/hooks/block-main-push.sh`: блокирует `git push` в `main`/`master`, если не выставлена переменная `CAPSTONE_ALLOW_MAIN_PUSH=1`. Автоматика коммитит в `digest/auto`, слияние в `main` — вручную.
-- **PostToolUse** → `.claude/hooks/pipeline-log.sh`: логирует каждый вызов инструмента в `logs/pipeline.log` (в `.gitignore`).
+- **PreToolUse / Bash|PowerShell** → `.claude/hooks/block-main-push.js`: блокирует `git push` в `main`/`master`, если не выставлена переменная `CAPSTONE_ALLOW_MAIN_PUSH=1`. Автоматика коммитит в `digest/auto`, слияние в `main` — вручную.
+- **PostToolUse** → `.claude/hooks/pipeline-log.js`: логирует каждый вызов инструмента в `logs/pipeline.log` (в `.gitignore`).
+
+Хуки написаны на Node, а не на bash с `jq`. Раньше они были shell-скриптами и на машине без `jq` падали с кодом 127 — для PreToolUse это «некритичная ошибка», команда проходит дальше, то есть защита `main` молча не работала. Node обязателен для проекта, лишней зависимости не появляется. В `.claude/hooks/package.json` стоит `"type": "commonjs"`, потому что в корневом `package.json` — `"type": "module"`.
 - **Stop** → `.claude/hooks/validate-article.js`: проверяет статьи, изменённые за последние 10 минут, — обязательные поля frontmatter (`title`, `description`, `pubDate`, `heroImage`, `source`), длину `title` (≤60 символов) и `description` (≤160). При нарушении блокирует завершение хода.
 
 ## Редполитика
