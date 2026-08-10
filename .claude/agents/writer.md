@@ -23,7 +23,7 @@ tools: Read, Write, WebFetch
    - `description` до 160 символов, одно предложение.
    - Тело 300–500 слов, 2–4 абзаца, информационный стиль.
    - Без AI-маркеров, оценочных прилагательных без фактов, шаблона «от X до Y».
-4. Сохрани в `src/content/blog/YYYY-MM-DD-slug.md` с frontmatter. Обязательные поля: `title`, `description`, `pubDate`, `source`, `tags`. Поле `cover` оставь пустой строкой (`cover: ""`) — заполнит cover-artist.
+4. Сохрани в `src/content/blog/YYYY-MM-DD-slug.md` с frontmatter. Обязательные поля: `title`, `description`, `pubDate`, `source`, `tags`. Поле `heroImage` не добавляй — его впишет cover-artist после того, как скачает обложку.
 
 ## Выход
 

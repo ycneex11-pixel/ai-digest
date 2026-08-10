@@ -1,17 +1,17 @@
 ---
-import { type CollectionEntry, getCollection, render } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 import BlogPost from '../../layouts/BlogPost.astro';
 
-export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-	return posts.map((post) => ({
-		params: { slug: post.id },
-		props: post,
-	}));
-}
-type Props = CollectionEntry<'blog'>;
+// Страница серверная (output: 'server'), поэтому getStaticPaths здесь
+// игнорируется — статью грузим по slug из адреса. Пререндерить нельзя:
+// статика отдаётся до middleware и обошла бы авторизацию.
+const { slug } = Astro.params;
+const post = slug ? await getEntry('blog', slug) : undefined;
 
-const post = Astro.props;
+if (!post) {
+	return new Response(null, { status: 404 });
+}
+
 const { Content } = await render(post);
 ---
 
