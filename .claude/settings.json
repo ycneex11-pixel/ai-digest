@@ -20,11 +20,11 @@
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/block-main-push.sh"
+            "command": "node .claude/hooks/block-main-push.js"
           }
         ]
       }
@@ -35,7 +35,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/pipeline-log.sh"
+            "command": "node .claude/hooks/pipeline-log.js"
           }
         ]
       }

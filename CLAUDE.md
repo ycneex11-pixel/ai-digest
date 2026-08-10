@@ -43,8 +43,10 @@ MCP-серверы (Tavily, Replicate) объявлены в `.mcp.json` в ко
 
 ### Хуки (`.claude/settings.json`)
 
-- **PreToolUse / Bash** → `.claude/hooks/block-main-push.sh`: блокирует `git push` в `main`/`master`, если не выставлена переменная `CAPSTONE_ALLOW_MAIN_PUSH=1`. Автоматика коммитит в `digest/auto`, слияние в `main` — вручную.
-- **PostToolUse** → `.claude/hooks/pipeline-log.sh`: логирует каждый вызов инструмента в `logs/pipeline.log` (в `.gitignore`).
+- **PreToolUse / Bash|PowerShell** → `.claude/hooks/block-main-push.js`: блокирует `git push` в `main`/`master`, если не выставлена переменная `CAPSTONE_ALLOW_MAIN_PUSH=1`. Автоматика коммитит в `digest/auto`, слияние в `main` — вручную.
+- **PostToolUse** → `.claude/hooks/pipeline-log.js`: логирует каждый вызов инструмента в `logs/pipeline.log` (в `.gitignore`).
+
+Хуки написаны на Node, а не на bash с `jq`. Раньше они были shell-скриптами и на машине без `jq` падали с кодом 127 — для PreToolUse это «некритичная ошибка», команда проходит дальше, то есть защита `main` молча не работала. Node обязателен для проекта, лишней зависимости не появляется. В `.claude/hooks/package.json` стоит `"type": "commonjs"`, потому что в корневом `package.json` — `"type": "module"`.
 - **Stop** → `.claude/hooks/validate-article.js`: проверяет статьи, изменённые за последние 10 минут, — обязательные поля frontmatter (`title`, `description`, `pubDate`, `heroImage`, `source`), длину `title` (≤60 символов) и `description` (≤160). При нарушении блокирует завершение хода.
 
 ## Редполитика
