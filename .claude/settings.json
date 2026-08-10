@@ -3,7 +3,17 @@
     "deny": [
       "Read(**/.env*)",
       "Read(**/credentials*)",
-      "Read(**/*secret*)"
+      "Read(**/*secret*)",
+      "Read(/proc/self/environ)",
+      "Read(**/environ)",
+      "Bash(env)",
+      "Bash(env *)",
+      "Bash(printenv)",
+      "Bash(printenv *)",
+      "Bash(export -p*)",
+      "Bash(declare -x*)",
+      "Bash(set)",
+      "Bash(set -o posix*)"
     ]
   },
   "mcpServers": {
