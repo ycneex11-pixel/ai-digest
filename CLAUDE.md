@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Node `>=22.12.0` (см. `engines` в `package.json`).
 
-MCP-сервер Tavily объявлен в `.mcp.json` в корне — Claude Code читает проектные серверы только оттуда, ключ `mcpServers` в `settings.json` игнорируется. Ключ подставляется из окружения через `${TAVILY_API_KEY}`, поэтому запускайте Claude Code через `./run-claude.sh`, а не голым `claude` — скрипт подгружает `.env` (не в репозитории, см. `.gitignore`) перед стартом. Строка `TAVILY_API_KEY=...` в `.env` обязательна, иначе поиск отвечает `Unauthorized`.
+MCP-сервер Tavily объявлен в `.mcp.json` в корне — Claude Code читает проектные серверы только оттуда, ключ `mcpServers` в `settings.json` игнорируется. Сервер стартует через обёртку `.claude/mcp/tavily.cjs`: она берёт `TAVILY_API_KEY` из окружения, а если его там нет — читает из `.env` в корне (не в репозитории, см. `.gitignore`). Поэтому Claude Code можно запускать любым способом, включая расширение VSCode; `./run-claude.sh` остался для терминала, но больше не обязателен. Строка `TAVILY_API_KEY=...` в `.env` обязательна, иначе поиск отвечает `Unauthorized`. После смены ключа перезапустите сессию (в VSCode — Reload Window), MCP-сервер читает `.env` только на старте.
 
 Обложки MCP не требуют: `cover-artist` берёт их с `image.pollinations.ai` обычным `curl`, без ключа и без оплаты. Replicate из проекта убран — он требовал привязки карты.
 
