@@ -2,11 +2,8 @@
   "mcpServers": {
     "tavily": {
       "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "tavily-mcp@latest"],
-      "env": {
-        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
-      }
+      "command": "node",
+      "args": [".claude/mcp/tavily.cjs"]
     }
   }
 }
