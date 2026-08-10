@@ -17,7 +17,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Node `>=22.12.0` (см. `engines` в `package.json`).
 
-Для работы MCP-серверов (Tavily, Replicate) запускайте Claude Code через `./run-claude.sh`, а не голым `claude` — скрипт подгружает `.env` (не в репозитории, см. `.gitignore`) перед стартом.
+MCP-серверы (Tavily, Replicate) объявлены в `.mcp.json` в корне — Claude Code читает проектные серверы только оттуда, ключ `mcpServers` в `settings.json` игнорируется. Ключи подставляются из окружения через `${TAVILY_API_KEY}` и `${REPLICATE_API_TOKEN}`, поэтому запускайте Claude Code через `./run-claude.sh`, а не голым `claude` — скрипт подгружает `.env` (не в репозитории, см. `.gitignore`) перед стартом.
 
 ## Архитектура
 
