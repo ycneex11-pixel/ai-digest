@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "tavily": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "tavily-mcp@latest"],
+      "env": {
+        "TAVILY_API_KEY": "${TAVILY_API_KEY}"
+      }
+    },
+    "replicate": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "replicate-mcp@alpha", "--tools=code"],
+      "env": {
+        "REPLICATE_API_TOKEN": "${REPLICATE_API_TOKEN}"
+      }
+    }
+  }
+}
