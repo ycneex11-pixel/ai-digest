@@ -1,5 +1,14 @@
 {
   "permissions": {
+    "allow": [
+      "mcp__tavily__tavily_search",
+      "WebFetch(domain:docs.docker.com)",
+      "WebFetch(domain:www.theregister.com)",
+      "Bash(mkdir -p \"c:/Users/1/Downloads/ai-digest-main/src/assets/covers\")",
+      "Bash(curl -fsSL \"https://image.pollinations.ai/prompt/Editorial%20illustration%20about%20an%20AI%20coding%20agent%20orchestrating%20parallel%20tasks%20in%20a%20computer%20terminal%2C%20minimalist%2C%20flat%20colors%2C%20tech%20magazine%20style%2C%20no%20text?width=1280&height=720&nologo=true\" -o \"c:/Users/1/Downloads/ai-digest-main/src/assets/covers/2026-08-11-meta-muse-code.jpg\")",
+      "Bash(mkdir -p src/assets/covers)",
+      "Bash(curl -fsSL \"https://image.pollinations.ai/prompt/Editorial%20illustration%20about%20microVM%20sandbox%20isolation%20for%20AI%20coding%20agents%2C%20minimalist%2C%20flat%20colors%2C%20tech%20magazine%20style%2C%20no%20text?width=1280&height=720&nologo=true\" -o \"src/assets/covers/2026-08-11-docker-sandboxes-microvm.jpg\")"
+    ],
     "deny": [
       "Read(**/.env*)",
       "Read(**/credentials*)",

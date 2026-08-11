@@ -29,3 +29,6 @@ logs/
 
 # personal Claude Code permissions log — may accumulate sensitive paths/hosts over time
 .claude/settings.local.json
+
+# отдельный git-репозиторий из другого урока, не относится к ai-digest
+git-demo/
