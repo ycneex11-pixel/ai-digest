@@ -24,7 +24,9 @@ const required = ['title', 'description', 'pubDate', 'heroImage', 'source'];
 const errors = [];
 
 for (const { full, f } of recent) {
-  const content = fs.readFileSync(full, 'utf-8');
+  // Git на Windows при checkout может отдать CRLF (autocrlf) и BOM — нормализуем,
+  // иначе frontmatter с «---\r\n» не совпадает и \r искажает подсчёт длины полей.
+  const content = fs.readFileSync(full, 'utf-8').replace(/^\uFEFF/, '').replace(/\r\n/g, '\n');
   const fmMatch = content.match(/^---\n([\s\S]*?)\n---/);
   if (!fmMatch) { errors.push(`${f}: нет frontmatter`); continue; }
 
