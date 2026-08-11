@@ -33,13 +33,13 @@ MCP-сервер Tavily объявлен в `.mcp.json` в корне — Claude
 
 ### Пайплайн публикации — субагенты, не скрипт
 
-Дайджест собирается цепочкой Claude Code субагентов через скилл `/digest` (`.claude/skills/digest.md`):
+Дайджест собирается цепочкой Claude Code субагентов через скилл `/digest` (`.claude/skills/digest/SKILL.md`):
 
 1. **news-scout** (`.claude/agents/news-scout.md`) — ищет 3 темы через MCP Tavily, отбирает по разделу «Редполитика» ниже в этом файле.
 2. Для каждой темы параллельно: **writer** (`.claude/agents/writer.md`) пишет статью и сохраняет в `src/content/blog/`, затем **cover-artist** (`.claude/agents/cover-artist.md`) генерирует обложку 16:9 через `image.pollinations.ai`, скачивает её в `src/assets/covers/` и дописывает `heroImage:` во frontmatter.
 3. **page-builder** (`.claude/agents/page-builder.md`) — финальная проверка frontmatter всех статей выпуска, коммит в ветку `digest/auto`, `git push origin digest/auto`.
 
-Скилл `/cover` (`.claude/skills/cover.md`) — то же генерирование обложки, но как самостоятельная команда вне пайплайна.
+Скилл `/cover` (`.claude/skills/cover/SKILL.md`) — то же генерирование обложки, но как самостоятельная команда вне пайплайна.
 
 **Для шага `page-builder` нужен git-репозиторий с настроенным `origin`.** Репозиторий подключён к `https://github.com/ycneex11-pixel/ai-digest`, ветка по умолчанию — `main`.
 
